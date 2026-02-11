@@ -1,0 +1,5 @@
+# Don't commit your token!
+.env
+*.pyc
+__pycache__/
+.vscode/
