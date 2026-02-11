@@ -30,7 +30,6 @@ async def hello(ctx):
     await ctx.channel.send("Hello!")
 
 @bot.command(name="create")
-@commands.has_permissions(manage_roles=True)
 async def create(ctx, subcommand: str, team_name: str, *members: discord.Member):
     """
     Creates a team with a leader and members.
@@ -87,9 +86,7 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
 
 @create.error
 async def create_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("You need 'Manage Roles' permission to use this command!")
-    elif isinstance(error, commands.MemberNotFound):
+    if isinstance(error, commands.MemberNotFound):
         await ctx.send("Member not found! Please mention valid members.")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Usage: `$create team TeamName @leader @member2 @member3...`")
