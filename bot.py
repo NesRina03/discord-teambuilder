@@ -69,6 +69,35 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         )
         await ctx.send(f"Created new role: {team_name}")
     
+    # Create category with permissions
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        team_role: discord.PermissionOverwrite(view_channel=True, send_messages=True, connect=True),
+        leader: discord.PermissionOverwrite(
+            view_channel=True,
+            manage_channels=True,
+            manage_permissions=True
+        ),
+        guild.me: discord.PermissionOverwrite(
+            view_channel=True,
+            manage_channels=True
+        )
+    }
+    
+    category = await guild.create_category(team_name, overwrites=overwrites)    
+    # Create general text channel
+    general_channel = await guild.create_text_channel(
+        "general",
+        category=category,
+        topic=f"General chat for {team_name}"
+    )
+    
+    # Create voice channel
+    voice_channel = await guild.create_voice_channel(
+        "Voice Chat",
+        category=category
+    )
+        
     # Add both Team Leader and Team roles to the first person
     await leader.add_roles(team_leader_role, team_role)
     
@@ -78,11 +107,6 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     
     # Build response message
     member_list = ", ".join([m.mention for m in team_members]) if team_members else "No additional members"
-    await ctx.send(
-        f"Team **{team_name}** created!\n"
-        f"Leader: {leader.mention}\n"
-        f"Members: {member_list}"
-    )
 
 @create.error
 async def create_error(ctx, error):
