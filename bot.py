@@ -47,8 +47,13 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         await ctx.send("Usage: `$create team TeamName @leader @member2 @member3...`")
         return
     
-    if len(members) < 1:
-        await ctx.send("You must mention at least a team leader!")
+    # Check team size (min 3, max 5)
+    if len(members) < 3:
+        await ctx.send("A team must have at least 3 members (including the leader).")
+        return
+    
+    if len(members) > 5:
+        await ctx.send("A team can have a maximum of 5 members (including the leader).")
         return
     
     guild = ctx.guild
