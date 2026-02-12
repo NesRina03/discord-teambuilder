@@ -169,17 +169,12 @@ async def create_error(ctx, error):
         await ctx.send("Usage: `$create team TeamName @leader @member2 @member3...`")
 
 @bot.command(name="delete")
+@commands.has_permissions(administrator=True)
 async def delete(ctx, subcommand: str, *, team_name: str):
     """
     Deletes a team, its channels, category, and role.
     Usage: $delete team TeamName
     """
-    # Only allow command in team building channel
-    TEAM_BUILDING_CHANNEL_ID = 1470905344002621573
-    if ctx.channel.id != TEAM_BUILDING_CHANNEL_ID:
-        await ctx.send("This command can only be used in the team building channel.")
-        return
-    
     if subcommand.lower() != "team":
         await ctx.send("Usage: `$delete team TeamName`")
         return
@@ -208,7 +203,9 @@ async def delete(ctx, subcommand: str, *, team_name: str):
 
 @delete.error
 async def delete_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredArgument):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You need Administrator permission to delete teams.")
+    elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Usage: `$delete team TeamName`")
 
 # Run the bot with token from environment variable
