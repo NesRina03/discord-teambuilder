@@ -63,6 +63,15 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         return
     
     guild = ctx.guild
+    
+    # Check if any member has the "Bots" role
+    bots_role = discord.utils.get(guild.roles, name="Bots")
+    if bots_role:
+        for member in members:
+            if bots_role in member.roles:
+                await ctx.send(f"{member.mention} cannot be added to a team (has Bots role).")
+                return
+    
     leader = members[0]  # First tagged person is the leader
     team_members = members[1:]  # Rest are regular members
     
@@ -128,8 +137,8 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     for member in team_members:
         await member.add_roles(team_role)
     
-    # Build response message
-    member_list = ", ".join([m.mention for m in team_members]) if team_members else "No additional members"
+    # Send success message
+    await ctx.send(f"Team '{team_name}' created successfully!")
 
 @create.error
 async def create_error(ctx, error):
