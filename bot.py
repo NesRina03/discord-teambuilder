@@ -1,5 +1,6 @@
 import discord
 import os
+import random
 from discord.ext import commands
 
 # Set up intents to access member information
@@ -81,7 +82,7 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     # Create team name role
     team_role = await guild.create_role(
         name=team_name,
-        color=discord.Color.blue(),
+        color=discord.Color.from_rgb(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)),
         reason=f"Team role for {team_name}"
     )
     await ctx.send(f"Created new role: {team_name}")
