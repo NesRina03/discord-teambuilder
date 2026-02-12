@@ -42,6 +42,8 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         await ctx.send("This command can only be used in the team building channel.")
         return
     
+    guild = ctx.guild
+    
     print(f"Command received! Subcommand: {subcommand}, Team: {team_name}, Members: {members}")
     
     if subcommand.lower() != "team":
@@ -65,8 +67,6 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     if len(members) > 5:
         await ctx.send("A team can have a maximum of 5 members (including the leader).")
         return
-    
-    guild = ctx.guild
     
     # Check if any member is already in another team
     # Get all team categories (team roles match category names)
