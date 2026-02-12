@@ -168,5 +168,48 @@ async def create_error(ctx, error):
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Usage: `$create team TeamName @leader @member2 @member3...`")
 
+@bot.command(name="delete")
+async def delete(ctx, subcommand: str, *, team_name: str):
+    """
+    Deletes a team, its channels, category, and role.
+    Usage: $delete team TeamName
+    """
+    # Only allow command in team building channel
+    TEAM_BUILDING_CHANNEL_ID = 1470905344002621573
+    if ctx.channel.id != TEAM_BUILDING_CHANNEL_ID:
+        await ctx.send("This command can only be used in the team building channel.")
+        return
+    
+    if subcommand.lower() != "team":
+        await ctx.send("Usage: `$delete team TeamName`")
+        return
+    
+    guild = ctx.guild
+    
+    # Find the team role
+    team_role = discord.utils.get(guild.roles, name=team_name)
+    if not team_role:
+        await ctx.send(f"Team '{team_name}' does not exist.")
+        return
+    
+    # Find the category
+    category = discord.utils.get(guild.categories, name=team_name)
+    
+    # Delete all channels in the category
+    if category:
+        for channel in category.channels:
+            await channel.delete()
+        await category.delete()
+        await ctx.send(f"Deleted category and channels for '{team_name}'.")
+    
+    # Delete the team role
+    await team_role.delete()
+    await ctx.send(f"Team '{team_name}' deleted successfully!")
+
+@delete.error
+async def delete_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Usage: `$delete team TeamName`")
+
 # Run the bot with token from environment variable
 bot.run(os.getenv('DISCORD_TOKEN'))
