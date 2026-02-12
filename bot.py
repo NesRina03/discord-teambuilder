@@ -57,6 +57,11 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         await ctx.send("A team can have a maximum of 5 members (including the leader).")
         return
     
+    # Check for duplicate members
+    if len(members) != len(set(members)):
+        await ctx.send("Each member must be unique. You cannot mention the same person twice.")
+        return
+    
     guild = ctx.guild
     leader = members[0]  # First tagged person is the leader
     team_members = members[1:]  # Rest are regular members
