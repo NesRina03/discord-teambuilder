@@ -48,6 +48,15 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         await ctx.send("Usage: `$create team TeamName @leader @member2 @member3...`")
         return
     
+    # Check if team already exists (by checking if role or category exists)
+    existing_role = discord.utils.get(guild.roles, name=team_name)
+    existing_category = discord.utils.get(guild.categories, name=team_name)
+    
+    if existing_role or existing_category:
+        await ctx.send(f"Team '{team_name}' already exists. Please choose a different name.")
+        return
+    
+
     # Check team size (min 3, max 5)
     if len(members) < 3:
         await ctx.send("A team must have at least 3 members (including the leader).")
@@ -57,12 +66,13 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         await ctx.send("A team can have a maximum of 5 members (including the leader).")
         return
     
+    guild = ctx.guild
+    
+    
     # Check for duplicate members
     if len(members) != len(set(members)):
         await ctx.send("Each member must be unique. You cannot mention the same person twice.")
         return
-    
-    guild = ctx.guild
     
     # Check if any member has the "Bots" role
     bots_role = discord.utils.get(guild.roles, name="Bots")
@@ -74,14 +84,6 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     
     leader = members[0]  # First tagged person is the leader
     team_members = members[1:]  # Rest are regular members
-    
-    # Check if team already exists (by checking if role or category exists)
-    existing_role = discord.utils.get(guild.roles, name=team_name)
-    existing_category = discord.utils.get(guild.categories, name=team_name)
-    
-    if existing_role or existing_category:
-        await ctx.send(f"Team '{team_name}' already exists. Please choose a different name.")
-        return
     
     # Find or create "Team Leader" role
     team_leader_role = discord.utils.get(guild.roles, name="Team Leader")
