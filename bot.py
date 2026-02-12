@@ -35,6 +35,12 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     Creates a team with a leader and members.
     Usage: $create team TeamName @leader @member2 @member3 @member4 @member5
     """
+    # Only allow command in team building channel
+    TEAM_BUILDING_CHANNEL_ID = 1470905344002621573
+    if ctx.channel.id != TEAM_BUILDING_CHANNEL_ID:
+        await ctx.send("This command can only be used in the team building channel.")
+        return
+    
     print(f"Command received! Subcommand: {subcommand}, Team: {team_name}, Members: {members}")
     
     if subcommand.lower() != "team":
@@ -49,6 +55,14 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     leader = members[0]  # First tagged person is the leader
     team_members = members[1:]  # Rest are regular members
     
+    # Check if team already exists (by checking if role or category exists)
+    existing_role = discord.utils.get(guild.roles, name=team_name)
+    existing_category = discord.utils.get(guild.categories, name=team_name)
+    
+    if existing_role or existing_category:
+        await ctx.send(f"Team '{team_name}' already exists. Please choose a different name.")
+        return
+    
     # Find or create "Team Leader" role
     team_leader_role = discord.utils.get(guild.roles, name="Team Leader")
     if not team_leader_role:
@@ -59,15 +73,13 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         )
         await ctx.send(f"Created new role: Team Leader")
     
-    # Find or create team name role
-    team_role = discord.utils.get(guild.roles, name=team_name)
-    if not team_role:
-        team_role = await guild.create_role(
-            name=team_name,
-            color=discord.Color.blue(),
-            reason=f"Team role for {team_name}"
-        )
-        await ctx.send(f"Created new role: {team_name}")
+    # Create team name role
+    team_role = await guild.create_role(
+        name=team_name,
+        color=discord.Color.blue(),
+        reason=f"Team role for {team_name}"
+    )
+    await ctx.send(f"Created new role: {team_name}")
     
     # Create category with permissions
     overwrites = {
@@ -84,7 +96,9 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         )
     }
     
-    category = await guild.create_category(team_name, overwrites=overwrites)    
+    category = await guild.create_category(team_name, overwrites=overwrites)
+    await ctx.send(f"Created category: {team_name}")
+    
     # Create general text channel
     general_channel = await guild.create_text_channel(
         "general",
@@ -97,7 +111,9 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         "Voice Chat",
         category=category
     )
-        
+    
+    await ctx.send(f"Created channels: {general_channel.mention} and {voice_channel.name}")
+    
     # Add both Team Leader and Team roles to the first person
     await leader.add_roles(team_leader_role, team_role)
     
@@ -107,6 +123,13 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     
     # Build response message
     member_list = ", ".join([m.mention for m in team_members]) if team_members else "No additional members"
+    await ctx.send(
+        f"Team **{team_name}** is ready!\n"
+        f"Leader: {leader.mention} (can manage channels in this category)\n"
+        f"Members: {member_list}\n"
+        f"Category: {category.name}\n"
+        f"Channels: {general_channel.mention}, {voice_channel.name}"
+    )
 
 @create.error
 async def create_error(ctx, error):
