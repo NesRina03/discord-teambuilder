@@ -187,6 +187,15 @@ async def delete(ctx, subcommand: str, *, team_name: str):
         await ctx.send(f"Team '{team_name}' does not exist.")
         return
     
+    # Find Team Leader role
+    team_leader_role = discord.utils.get(guild.roles, name="Team Leader")
+    
+    # Remove Team Leader role from members who have this team role
+    if team_leader_role:
+        for member in guild.members:
+            if team_role in member.roles and team_leader_role in member.roles:
+                await member.remove_roles(team_leader_role)
+    
     # Find the category
     category = discord.utils.get(guild.categories, name=team_name)
     
