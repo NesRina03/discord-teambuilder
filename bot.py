@@ -68,6 +68,15 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
     
     guild = ctx.guild
     
+    # Check if any member is already in another team
+    # Get all team categories (team roles match category names)
+    team_categories = [cat.name for cat in guild.categories]
+    for member in members:
+        for role in member.roles:
+            # Skip generic roles like Team Leader
+            if role.name in team_categories and role.name != "Team Leader":
+                await ctx.send(f"{member.mention} is already in team '{role.name}'.")
+                return
     
     # Check for duplicate members
     if len(members) != len(set(members)):
@@ -81,6 +90,7 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
             if bots_role in member.roles:
                 await ctx.send(f"{member.mention} cannot be added to a team (has Bots role).")
                 return
+    
     
     leader = members[0]  # First tagged person is the leader
     team_members = members[1:]  # Rest are regular members
