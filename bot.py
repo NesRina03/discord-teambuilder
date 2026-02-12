@@ -115,6 +115,15 @@ async def create(ctx, subcommand: str, team_name: str, *members: discord.Member)
         )
     }
     
+    # Add Authors and Staff roles if they exist
+    authors_role = discord.utils.get(guild.roles, name="Author")
+    if authors_role:
+        overwrites[authors_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, connect=True)
+    
+    staff_role = discord.utils.get(guild.roles, name="Staff")
+    if staff_role:
+        overwrites[staff_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, connect=True)
+    
     category = await guild.create_category(team_name, overwrites=overwrites)
     
     # Create general text channel
